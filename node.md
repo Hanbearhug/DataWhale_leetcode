@@ -125,3 +125,53 @@ class Solution {
 我们首先想清楚有哪些节点需要记录，显然需要记录的是反转开头节点的前一个节点和反转节点之后的  
 一个节点，然后需要一个count变量记录当前所在的区间，保证只反转给定区域内的节点，剩下的与上题  
 类似，但要格外注意的是此时原先的头节点可能仍是头节点，也可能不是，如果设置了dummy变量则不需要考虑这种情况。  
+```
+class Solution {
+    public ListNode reverseBetween(ListNode head, int m, int n) {
+        if (head.next==null||m==n){
+            return head;
+        }
+        if (m==1){
+            ListNode pre = head;
+            ListNode node = pre.next;
+            ListNode next=null;
+            int count=1;
+            while (count<n){
+                next = node.next;
+                node.next = pre;
+                pre = node;
+                node = next;
+                count++;
+            }
+            head.next = next;
+            return pre;
+        }
+        else{
+            ListNode pre = new ListNode(-1);
+            ListNode node = head;
+            pre.next = head;
+            int count=1;
+            while (count<m){
+                pre = pre.next;
+                node = node.next;
+                count++;
+            }
+            ListNode preReverse = pre;
+            node = node.next;
+            pre = pre.next;
+            count++;
+            ListNode next=null;
+            while (count<=n){
+                next = node.next;
+                node.next = pre;
+                pre = node;
+                node = next;
+                count++;
+            }
+            preReverse.next.next = next;
+            preReverse.next = pre;
+            return head;
+        }
+    }
+}
+```
