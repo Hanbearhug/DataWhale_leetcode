@@ -1,0 +1,234 @@
+1.两个有序链表的合并  
+此问题比较简单，我们立刻能想到的特殊情况就是有一个链表/两个为null的情况，在这种情况下我们直接返回另一个链表的头节点即可。  
+接下来我们考虑一般情况，分以下几个步骤完成。  
+首先新建一个头节点head以及当前指针cur，cur指针首先指向新的头节点。  
+而后类似于归并排序的思路，使用两个指针分别从两个链表的头节点出发，每次将两个指针指向的节点中值比较小的节点连到新的链表上，  
+再将当前指针cur往下移动一位，而后将原先比较小的那个节点对应的指针往下移动一位。  
+最后当有一个指针指向空节点时将另一个指针指向的节点连到当前节点cur的尾部即可。代码如下:  
+```
+class Solution {
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if(l1==null||l2==null){
+            return (l1==null)?l2:l1;
+        }
+        else{
+            ListNode node = new ListNode(-1);
+            ListNode cur = node;
+            ListNode index1 = l1;
+            ListNode index2 = l2;
+            while (index1!=null&&index2!=null){
+                if (index1.val>=index2.val){
+                    cur.next = index2;
+                    cur = cur.next;
+                    index2 = index2.next;
+                }
+                else{
+                    cur.next = index1;
+                    cur = cur.next;
+                    index1 = index1.next;
+                }
+            }
+            if (index1==null){
+                cur.next = index2;
+            }
+            else{
+                cur.next = index1;
+            }
+            return node.next;
+        }
+    }
+}
+```
+
+2. k个有序链表的合并：  
+首先当然能想到的解法就是循环合并，每次合并两个，再将新的合并链表和下一个链表合并，这种做法只需要考虑以下两种特殊情况  
+1.链表数组中包含空的头节点情况。  
+2.链表数组中无节点或只有一个节点的情况。  
+除此之外依次循环合并即可。但这种做法大量节点会被重复遍历，时间复杂度为O（N*K）  
+```
+class Solution {
+    public static ListNode mergeTwoLists(ListNode l1, ListNode l2){
+        if (l1==null||l2==null){
+            return (l1==null)?l2:l1;
+        }
+        else{
+            ListNode head = new ListNode(-1);
+            ListNode cur = head;
+            ListNode index1 = l1;
+            ListNode index2 = l2;
+            while (index1!=null&&index2!=null){
+                if (index1.val>index2.val){
+                    cur.next = index2;
+                    cur = cur.next;
+                    index2 = index2.next;
+                }
+                else{
+                    cur.next = index1;
+                    cur = cur.next;
+                    index1 = index1.next;
+                }
+            }
+            if (index1==null){
+                cur.next = index2;
+            }
+            else{
+                cur.next = index1;
+            }
+            return head.next;
+        }
+    }
+    
+    public ListNode mergeKLists(ListNode[] lists) {
+        if (lists.length==0){
+            return null;
+        }
+        else if (lists.length==1){
+            return lists[0];
+        }
+        else{
+            ListNode l1 = lists[0];
+            for (int i=1;i<lists.length;i++){
+                l1 = mergeTwoLists(l1,lists[i]);
+            }
+            return l1;
+        }
+    }
+}
+```
+但从这种思路出发我们有第一种较优的解，即两两合并，而后四四合并，再八八合并，这样时间复杂度降为O（N*logK）  
+```
+class Solution {
+    public static ListNode mergeTwoLists(ListNode l1, ListNode l2){
+        if (l1==null||l2==null){
+            return (l1==null)?l2:l1;
+        }
+        else{
+            ListNode head = new ListNode(-1);
+            ListNode cur = head;
+            ListNode index1 = l1;
+            ListNode index2 = l2;
+            while (index1!=null&&index2!=null){
+                if (index1.val>index2.val){
+                    cur.next = index2;
+                    cur = cur.next;
+                    index2 = index2.next;
+                }
+                else{
+                    cur.next = index1;
+                    cur = cur.next;
+                    index1 = index1.next;
+                }
+            }
+            if (index1==null){
+                cur.next = index2;
+            }
+            else{
+                cur.next = index1;
+            }
+            return head.next;
+        }
+    }
+    
+    public ListNode mergeKLists(ListNode[] lists) {
+        if (lists.length==0){
+            return null;
+        }
+        else if (lists.length==1){
+            return lists[0];
+        }
+        else{
+            int interval=1;
+            int amount = lists.length;
+            while (interval<amount){
+                for (int i=0; i<amount-interval; i+= 2*interval){
+                    lists[i] = mergeTwoLists(lists[i], lists[i+interval]);
+                }
+                interval*=2;
+            }
+            return lists[0];
+        }
+    }
+}
+```
+
+其次能想到的便是扩展k=2时的思路，使用k个指针标记每一个链表中的当前位置，每次比较k个链表的当前位置的节点的值的大小，而后加入头节点中  
+这种做法的时间复杂度为O（N*K）  
+```
+class Solution {
+    
+    public ListNode mergeKLists(ListNode[] lists) {
+        if (lists.length==0){
+            return null;
+        }
+        else if (lists.length==1){
+            return lists[0];
+        }
+        else{
+            ListNode head = new ListNode(-1);
+            ListNode cur = head;
+            ListNode [] indexs = lists;
+            int count = indexs.length;
+            while (count>0){
+                int i=0;
+                int min_value=Integer.MAX_VALUE;
+                for (int j=0;j<indexs.length;j++){
+                	if (indexs[j]==null) {
+                		continue;
+                	}
+                    if (indexs[j].val<min_value){
+                        i = j;
+                        min_value = indexs[j].val;
+                    }
+                }
+                if (cur==null)
+                    break;
+                cur.next = indexs[i];
+                cur = cur.next;
+                if (indexs[i]!=null)
+                    indexs[i] = indexs[i].next;
+                if (indexs[i]==null) {
+                	count--;
+                }
+            }
+            return head.next;
+        }
+    }
+}
+```
+从这种做法我们能够引申出第二种比较优的做法，使用优先队列储存链表节点，优先队列类似于自定义比较器的堆结构， 我们每次弹出堆顶节点，将  
+堆顶节点连到新链表的尾端，若此节点有后继节点，则我们将后继节点加入优先队列，由于加入优先队列的上浮操作最坏为O（logK）时间复杂度，弹出  
+堆顶元素为O（1）时间复杂度，因此总共的时间复杂度为O（N*logK），代码如下：
+```
+class Solution {
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if(l1==null||l2==null){
+            return (l1==null)?l2:l1;
+        }
+        else{
+            ListNode node = new ListNode(-1);
+            ListNode cur = node;
+            ListNode index1 = l1;
+            ListNode index2 = l2;
+            while (index1!=null&&index2!=null){
+                if (index1.val>=index2.val){
+                    cur.next = index2;
+                    cur = cur.next;
+                    index2 = index2.next;
+                }
+                else{
+                    cur.next = index1;
+                    cur = cur.next;
+                    index1 = index1.next;
+                }
+            }
+            if (index1==null){
+                cur.next = index2;
+            }
+            else{
+                cur.next = index1;
+            }
+            return node.next;
+        }
+    }
+}
+```
